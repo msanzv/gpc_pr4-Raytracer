@@ -366,9 +366,9 @@ int Escena::add(Objeto *o){
 	return objetos.size() - 1;
 }
 
-Color Escena::rayTrace(Punto inicio, Vector direccion) const{
+Color Escena::rayTrace(Punto inicio, Vector direccion, int numReflex) const{
 	
-	float t, sht;
+	float t, sht, rft;
 	float min = INFINITO;
 	int minpos;
 	for(unsigned int i=0; i<objetos.size(); ++i){
@@ -385,38 +385,42 @@ Color Escena::rayTrace(Punto inicio, Vector direccion) const{
 		Color total = objetos[minpos]->colDifuso * 
 					  objetos[minpos]->ka *
 					  luces[0]->intensity(corte);			// I = ka*Cd*Ia  (Luz ambiental)
-
-		// Comprobación de sombras
-		/*bool inShadow = false;
-		int shadow_ri = 0;
-        for(unsigned int i=0; i<objetos.size(); ++i) {
-			shadow_ri = objetos[i]->rayIntersection(corte, inicio-corte, sht);
-			if(shadow_ri) {
-				inShadow = true;
-				break;
-			}
-        }
-        if(inShadow){ */
-			for(unsigned int i=1; i<luces.size(); ++i){				//Para cada otra luz
-				if(luces[i]->switchOn()){								//si luz encendida
-					Vector L = luces[i]->L(corte);							//L = rayo desde p a la luz
-					Vector V = Punto(0,0,3) - corte;
-					Vector H = (L+V); H = H*(1/H.module());
-					float NL = 0, NH = 0;
-					for(int k=0; k<3; ++k){
-						NL += normal.elem(k)*L.elem(k);
-						NH += normal.elem(k)*H.elem(k);
+	 
+		for(unsigned int i=1; i<luces.size(); ++i){				//Para cada otra luz
+			//Sombras
+			bool inShadow = false;									// Comprobación de sombras
+			if(this->shadowsOn){
+				for(unsigned int o=0; o<objetos.size(); ++o) {
+					if(o!=minpos && objetos[o]->rayIntersection(corte, luces[i]->position()-corte, sht)) {
+						inShadow = true;
+						break;
 					}
-					total = total + (luces[i]->intensity(corte) *
-									 objetos[minpos]->colDifuso *
-									 objetos[minpos]->kd *
-									 NL);									// Ii*kd*Cd*(N*L)
-					total = total + (luces[i]->intensity(corte) *
-									 objetos[minpos]->ks *
-									 pow(NH, objetos[minpos]->m));			// Ii*ks*(N*H)^m
 				}
 			}
-		//}
+			if(!inShadow && luces[i]->switchOn()){					//si luz encendida
+				Vector L = luces[i]->L(corte);							//L = rayo desde p a la luz
+				Vector V = Punto(0,0,3) - corte;
+				Vector H = (L+V); H = H*(1/H.module());
+				float NL = 0, NH = 0;
+				for(int k=0; k<3; ++k){
+					NL += normal.elem(k)*L.elem(k);
+					NH += normal.elem(k)*H.elem(k);
+				}
+				total = total + (luces[i]->intensity(corte) *
+								 objetos[minpos]->colDifuso *
+								 objetos[minpos]->kd *
+								 NL);									// Ii*kd*Cd*(N*L)
+				total = total + (luces[i]->intensity(corte) *
+								 objetos[minpos]->ks *
+								 pow(NH, objetos[minpos]->m));			// Ii*ks*(N*H)^m
+			}	
+			// Reflexion
+			if(this->reflexOn){
+				if(numReflex < this->maxReflex){
+					total = total + this->rayTrace(corte+normal*0.01, normal, numReflex + 1);
+				}
+			}
+		} 
 		return total;
 	}
 	else												//No existe interseccion

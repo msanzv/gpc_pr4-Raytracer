@@ -3,7 +3,7 @@ Prof: R.Vivó, J.Lluch para GPC.etsinf.upv.es 2011
 Código de generación de Rayos Primarios y relleno
 del framebuffer con el resultado del trazador.
 
-Alumno:                                        **/
+Alumno: Mario Sanz                                       **/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -163,7 +163,7 @@ void traza(void) {
 		y1 = calc_y1(b, alto, j);
 		for(i=0; i<ancho; i++){
 			x1 = calc_x1(a, ancho, i);
-			color = escena->rayTrace(Punto(0, 0, pos_z), Vector(x1, y1, -pos_z));
+			color = escena->rayTrace(Punto(0, 0, pos_z), Vector(x1, y1, -pos_z), 0);
 			*t++ = (unsigned char)(color.r()*255);
 			*t++ = (unsigned char)(color.g()*255);
 			*t++ = (unsigned char)(color.b()*255);
@@ -223,8 +223,10 @@ void myKeyboard(unsigned char tecla, int x, int y){
 				  escena->getLight(2)->switchLight(ON); break;
 		case 'l': escena->getLight(1)->switchLight(OFF);
 				  escena->getLight(2)->switchLight(OFF); break;
-		case 'S': escena->switchShadow(ON); break;
-		case 's': escena->switchShadow(OFF); break;
+		case 'S': escena->switchShadows(ON);  break;
+		case 's': escena->switchShadows(OFF); break;
+		case 'R': escena->switchReflex(ON);  break;
+		case 'r': escena->switchReflex(OFF); break;
 		case 27: exit(0);
 		default:;
 	};

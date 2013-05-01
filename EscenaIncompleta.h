@@ -154,17 +154,26 @@ protected:
 
 public:
 	//Añade aquí tu código. Métodos públicos sobre Escena
+	int shadowsOn;
+	int reflexOn;
+	int maxReflex;
+
+	Escena(){ 
+		shadowsOn = 1; 
+		reflexOn = 1;
+		maxReflex = 2;
+	}
+
 	int add(Objeto *o);										//Añade un objeto a la lista manejada por la escena
 	int addLight(FuenteLuminosa *fl);
-	Color rayTrace(Punto inicio,Vector direccion) const;	//Trazador (recursivo en practica 4.4)
+	Color rayTrace(Punto inicio, Vector direccion, int numReflex) const;	//Trazador (recursivo en practica 4.4)
 
 	FuenteLuminosa *getLight(int pos) const {
 		return luces[pos];
 	}
 
-	void switchShadow(int onoff){
-		//
-	}
+	void switchShadows(int onoff){ shadowsOn = onoff; }
+	void switchReflex(int onoff){ reflexOn = onoff; }
 };
 
 
